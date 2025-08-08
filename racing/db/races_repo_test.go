@@ -3,11 +3,11 @@ package db
 import (
 	"context"
 	"database/sql"
+	"racing/proto/racing"
 	"testing"
 	"time"
 
-	racing "git.neds.sh/matty/entain/racing/proto/racing"
-	_ "modernc.org/sqlite" // pure-Go sqlite driver; great for tests
+	_ "modernc.org/sqlite"
 )
 
 func newTestSQLite(t *testing.T) *sql.DB {

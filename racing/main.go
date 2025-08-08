@@ -5,10 +5,10 @@ import (
 	"flag"
 	"log"
 	"net"
+	"racing/db"
+	"racing/proto/racing"
+	"racing/service"
 
-	"git.neds.sh/matty/entain/racing/db"
-	"git.neds.sh/matty/entain/racing/proto/racing"
-	"git.neds.sh/matty/entain/racing/service"
 	"google.golang.org/grpc"
 )
 

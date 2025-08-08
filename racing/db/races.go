@@ -4,14 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"racing/proto/racing"
 	"strings"
 	"sync"
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
 	"google.golang.org/protobuf/types/known/timestamppb"
-
-	"git.neds.sh/matty/entain/racing/proto/racing"
 )
 
 // RacesRepo provides repository access to races.
