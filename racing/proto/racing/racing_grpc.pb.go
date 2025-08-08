@@ -14,86 +14,86 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// RacingClient is the client API for Racing service.
+// RacingServiceClient is the client API for RacingService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type RacingClient interface {
+type RacingServiceClient interface {
 	// ListRaces will return a collection of all races.
 	ListRaces(ctx context.Context, in *ListRacesRequest, opts ...grpc.CallOption) (*ListRacesResponse, error)
 }
 
-type racingClient struct {
+type racingServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewRacingClient(cc grpc.ClientConnInterface) RacingClient {
-	return &racingClient{cc}
+func NewRacingServiceClient(cc grpc.ClientConnInterface) RacingServiceClient {
+	return &racingServiceClient{cc}
 }
 
-func (c *racingClient) ListRaces(ctx context.Context, in *ListRacesRequest, opts ...grpc.CallOption) (*ListRacesResponse, error) {
+func (c *racingServiceClient) ListRaces(ctx context.Context, in *ListRacesRequest, opts ...grpc.CallOption) (*ListRacesResponse, error) {
 	out := new(ListRacesResponse)
-	err := c.cc.Invoke(ctx, "/racing.Racing/ListRaces", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/racing.RacingService/ListRaces", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// RacingServer is the server API for Racing service.
-// All implementations should embed UnimplementedRacingServer
+// RacingServiceServer is the server API for RacingService service.
+// All implementations should embed UnimplementedRacingServiceServer
 // for forward compatibility
-type RacingServer interface {
+type RacingServiceServer interface {
 	// ListRaces will return a collection of all races.
 	ListRaces(context.Context, *ListRacesRequest) (*ListRacesResponse, error)
 }
 
-// UnimplementedRacingServer should be embedded to have forward compatible implementations.
-type UnimplementedRacingServer struct {
+// UnimplementedRacingServiceServer should be embedded to have forward compatible implementations.
+type UnimplementedRacingServiceServer struct {
 }
 
-func (UnimplementedRacingServer) ListRaces(context.Context, *ListRacesRequest) (*ListRacesResponse, error) {
+func (UnimplementedRacingServiceServer) ListRaces(context.Context, *ListRacesRequest) (*ListRacesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListRaces not implemented")
 }
 
-// UnsafeRacingServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to RacingServer will
+// UnsafeRacingServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to RacingServiceServer will
 // result in compilation errors.
-type UnsafeRacingServer interface {
-	mustEmbedUnimplementedRacingServer()
+type UnsafeRacingServiceServer interface {
+	mustEmbedUnimplementedRacingServiceServer()
 }
 
-func RegisterRacingServer(s grpc.ServiceRegistrar, srv RacingServer) {
-	s.RegisterService(&Racing_ServiceDesc, srv)
+func RegisterRacingServiceServer(s grpc.ServiceRegistrar, srv RacingServiceServer) {
+	s.RegisterService(&RacingService_ServiceDesc, srv)
 }
 
-func _Racing_ListRaces_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _RacingService_ListRaces_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListRacesRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(RacingServer).ListRaces(ctx, in)
+		return srv.(RacingServiceServer).ListRaces(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/racing.Racing/ListRaces",
+		FullMethod: "/racing.RacingService/ListRaces",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RacingServer).ListRaces(ctx, req.(*ListRacesRequest))
+		return srv.(RacingServiceServer).ListRaces(ctx, req.(*ListRacesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// Racing_ServiceDesc is the grpc.ServiceDesc for Racing service.
+// RacingService_ServiceDesc is the grpc.ServiceDesc for RacingService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var Racing_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "racing.Racing",
-	HandlerType: (*RacingServer)(nil),
+var RacingService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "racing.RacingService",
+	HandlerType: (*RacingServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "ListRaces",
-			Handler:    _Racing_ListRaces_Handler,
+			Handler:    _RacingService_ListRaces_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

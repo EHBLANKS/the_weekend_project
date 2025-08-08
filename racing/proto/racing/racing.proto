@@ -1,16 +1,16 @@
 syntax = "proto3";
 package racing;
 
-option go_package = "/racing";
-
 import "google/protobuf/timestamp.proto";
 
-service Racing {
-  // ListRaces will return a collection of all races.
-  rpc ListRaces(ListRacesRequest) returns (ListRacesResponse) {}
-}
+option go_package = "/racing";
 
-/* Requests/Responses */
+// types/enums
+enum Visibility {
+  VISIBILITY_UNSPECIFIED = 0; // backwards compatible default
+  VISIBILITY_ANY = 1;
+  VISIBILITY_VISIBLE_ONLY = 2;
+}
 
 message ListRacesRequest {
   ListRacesRequestFilter filter = 1;
@@ -24,9 +24,8 @@ message ListRacesResponse {
 // Filter for listing races.
 message ListRacesRequestFilter {
   repeated int64 meeting_ids = 1;
+  Visibility visibility = 2;
 }
-
-/* Resources */
 
 // A race resource.
 message Race {
@@ -44,3 +43,7 @@ message Race {
   google.protobuf.Timestamp advertised_start_time = 6;
 }
 
+service RacingService {
+  // ListRaces will return a collection of all races.
+  rpc ListRaces(ListRacesRequest) returns (ListRacesResponse) {}
+}

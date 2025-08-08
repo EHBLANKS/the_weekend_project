@@ -1,19 +1,18 @@
 syntax = "proto3";
 package racing;
 
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
 option go_package = "/racing";
 
-import "google/protobuf/timestamp.proto";
-import "google/api/annotations.proto";
+// Types/enums
 
-service Racing {
-  // ListRaces returns a list of all races.
-  rpc ListRaces(ListRacesRequest) returns (ListRacesResponse) {
-    option (google.api.http) = { post: "/v1/list-races", body: "*" };
-  }
+enum Visibility {
+  VISIBILITY_UNSPECIFIED = 0; // backwards compatible default
+  VISIBILITY_ANY = 1;
+  VISIBILITY_VISIBLE_ONLY = 2;
 }
-
-/* Requests/Responses */
 
 // Request for ListRaces call.
 message ListRacesRequest {
@@ -28,6 +27,7 @@ message ListRacesResponse {
 // Filter for listing races.
 message ListRacesRequestFilter {
   repeated int64 meeting_ids = 1;
+  Visibility visibility = 2;
 }
 
 /* Resources */
@@ -46,4 +46,14 @@ message Race {
   bool visible = 5;
   // AdvertisedStartTime is the time the race is advertised to run.
   google.protobuf.Timestamp advertised_start_time = 6;
+}
+
+service RacingService {
+  // ListRaces returns a list of all races.
+  rpc ListRaces(ListRacesRequest) returns (ListRacesResponse) {
+    option (google.api.http) = {
+      post: "/v1/list-races"
+      body: "*"
+    };
+  }
 }

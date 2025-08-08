@@ -30,7 +30,7 @@ func run() error {
 	defer cancel()
 
 	mux := runtime.NewServeMux()
-	if err := racing.RegisterRacingHandlerFromEndpoint(
+	if err := racing.RegisterRacingServiceHandlerFromEndpoint(
 		ctx,
 		mux,
 		*grpcEndpoint,

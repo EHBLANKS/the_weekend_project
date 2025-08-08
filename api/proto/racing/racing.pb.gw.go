@@ -31,7 +31,7 @@ var _ = runtime.String
 var _ = utilities.NewDoubleArray
 var _ = metadata.Join
 
-func request_Racing_ListRaces_0(ctx context.Context, marshaler runtime.Marshaler, client RacingClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_RacingService_ListRaces_0(ctx context.Context, marshaler runtime.Marshaler, client RacingServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq ListRacesRequest
 	var metadata runtime.ServerMetadata
 
@@ -48,7 +48,7 @@ func request_Racing_ListRaces_0(ctx context.Context, marshaler runtime.Marshaler
 
 }
 
-func local_request_Racing_ListRaces_0(ctx context.Context, marshaler runtime.Marshaler, server RacingServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_RacingService_ListRaces_0(ctx context.Context, marshaler runtime.Marshaler, server RacingServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq ListRacesRequest
 	var metadata runtime.ServerMetadata
 
@@ -65,24 +65,24 @@ func local_request_Racing_ListRaces_0(ctx context.Context, marshaler runtime.Mar
 
 }
 
-// RegisterRacingHandlerServer registers the http handlers for service Racing to "mux".
-// UnaryRPC     :call RacingServer directly.
+// RegisterRacingServiceHandlerServer registers the http handlers for service RacingService to "mux".
+// UnaryRPC     :call RacingServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
-// Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterRacingHandlerFromEndpoint instead.
-func RegisterRacingHandlerServer(ctx context.Context, mux *runtime.ServeMux, server RacingServer) error {
+// Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterRacingServiceHandlerFromEndpoint instead.
+func RegisterRacingServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server RacingServiceServer) error {
 
-	mux.Handle("POST", pattern_Racing_ListRaces_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_RacingService_ListRaces_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/racing.Racing/ListRaces")
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/racing.RacingService/ListRaces")
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_Racing_ListRaces_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_RacingService_ListRaces_0(rctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -90,16 +90,16 @@ func RegisterRacingHandlerServer(ctx context.Context, mux *runtime.ServeMux, ser
 			return
 		}
 
-		forward_Racing_ListRaces_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_RacingService_ListRaces_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
 	return nil
 }
 
-// RegisterRacingHandlerFromEndpoint is same as RegisterRacingHandler but
+// RegisterRacingServiceHandlerFromEndpoint is same as RegisterRacingServiceHandler but
 // automatically dials to "endpoint" and closes the connection when "ctx" gets done.
-func RegisterRacingHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
+func RegisterRacingServiceHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
 	conn, err := grpc.Dial(endpoint, opts...)
 	if err != nil {
 		return err
@@ -119,39 +119,39 @@ func RegisterRacingHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMu
 		}()
 	}()
 
-	return RegisterRacingHandler(ctx, mux, conn)
+	return RegisterRacingServiceHandler(ctx, mux, conn)
 }
 
-// RegisterRacingHandler registers the http handlers for service Racing to "mux".
+// RegisterRacingServiceHandler registers the http handlers for service RacingService to "mux".
 // The handlers forward requests to the grpc endpoint over "conn".
-func RegisterRacingHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
-	return RegisterRacingHandlerClient(ctx, mux, NewRacingClient(conn))
+func RegisterRacingServiceHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
+	return RegisterRacingServiceHandlerClient(ctx, mux, NewRacingServiceClient(conn))
 }
 
-// RegisterRacingHandlerClient registers the http handlers for service Racing
-// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "RacingClient".
-// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "RacingClient"
+// RegisterRacingServiceHandlerClient registers the http handlers for service RacingService
+// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "RacingServiceClient".
+// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "RacingServiceClient"
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
-// "RacingClient" to call the correct interceptors.
-func RegisterRacingHandlerClient(ctx context.Context, mux *runtime.ServeMux, client RacingClient) error {
+// "RacingServiceClient" to call the correct interceptors.
+func RegisterRacingServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux, client RacingServiceClient) error {
 
-	mux.Handle("POST", pattern_Racing_ListRaces_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_RacingService_ListRaces_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/racing.Racing/ListRaces")
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/racing.RacingService/ListRaces")
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_Racing_ListRaces_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_RacingService_ListRaces_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_Racing_ListRaces_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_RacingService_ListRaces_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -159,9 +159,9 @@ func RegisterRacingHandlerClient(ctx context.Context, mux *runtime.ServeMux, cli
 }
 
 var (
-	pattern_Racing_ListRaces_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "list-races"}, ""))
+	pattern_RacingService_ListRaces_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "list-races"}, ""))
 )
 
 var (
-	forward_Racing_ListRaces_0 = runtime.ForwardResponseMessage
+	forward_RacingService_ListRaces_0 = runtime.ForwardResponseMessage
 )
