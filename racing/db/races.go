@@ -1,26 +1,19 @@
+// Package db implements the data access layer for racing.
 package db
 
 import (
 	"context"
 	"database/sql"
 	"fmt"
-	"racing/proto/racing"
 	"strings"
 	"sync"
 	"time"
 
+	racing "racing/proto/racing"
+
 	_ "github.com/mattn/go-sqlite3"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
-
-// RacesRepo provides repository access to races.
-type RacesRepo interface {
-	// Init will initialise our races repository.
-	Init() error
-
-	// List will return a list of races.
-	List(ctx context.Context, filter *racing.ListRacesRequestFilter) ([]*racing.Race, error)
-}
 
 type racesRepo struct {
 	db   *sql.DB
@@ -35,23 +28,29 @@ func NewRacesRepo(db *sql.DB) RacesRepo {
 // Init prepares the race repository dummy data.
 func (r *racesRepo) Init() error {
 	var err error
-
 	r.init.Do(func() {
 		// For test/example purposes, we seed the DB with some dummy races.
 		err = r.seed()
 	})
-
 	return err
 }
 
-func (r *racesRepo) List(ctx context.Context, filter *racing.ListRacesRequestFilter) ([]*racing.Race, error) {
+// List returns races filtered and ordered per request.
+func (r *racesRepo) List(
+	ctx context.Context,
+	filter *racing.ListRacesRequestFilter,
+	sortBy racing.SortBy,
+	direction racing.SortDirection,
+) ([]*racing.Race, error) {
 	var (
 		query string
 		args  []any
 	)
 
 	query = getRaceQueries()[racesList]
+
 	query, args = r.applyFilter(query, filter)
+	query = r.applySort(query, sortBy, direction) // <-- ORDER BY here
 
 	rows, err := r.db.QueryContext(ctx, query, args...)
 	if err != nil {
@@ -83,49 +82,69 @@ func (r *racesRepo) applyFilter(query string, filter *racing.ListRacesRequestFil
 	if len(filter.MeetingIds) > 0 {
 		placeholders := strings.Repeat("?,", len(filter.MeetingIds)-1) + "?"
 		clauses = append(clauses, "meeting_id IN ("+placeholders+")")
-		for _, meetingID := range filter.MeetingIds {
-			args = append(args, meetingID)
+		for _, id := range filter.MeetingIds {
+			args = append(args, id)
 		}
 	}
 
-	// PR1: visibility filter
+	// visibility
 	switch filter.GetVisibility() {
 	case racing.Visibility_VISIBILITY_VISIBLE_ONLY:
 		clauses = append(clauses, "visible = 1")
-		// VISIBILITY_ANY / UNSPECIFIED => no clause
+		// VISIBILITY_UNSPECIFIED / VISIBILITY_ANY => no clause
 	}
 
-	if len(clauses) != 0 {
+	if len(clauses) > 0 {
 		query += " WHERE " + strings.Join(clauses, " AND ")
 	}
 	return query, args
 }
 
-func (m *racesRepo) scanRaces(rows *sql.Rows) ([]*racing.Race, error) {
-	var races []*racing.Race
+func (r *racesRepo) applySort(query string, sortBy racing.SortBy, dir racing.SortDirection) string {
+	// default defensively (service already sets defaults)
+	if sortBy == racing.SortBy_SORT_BY_UNSPECIFIED {
+		sortBy = racing.SortBy_SORT_BY_ADVERTISED_START_TIME
+	}
+	if dir == racing.SortDirection_SORT_DIRECTION_UNSPECIFIED {
+		dir = racing.SortDirection_SORT_DIRECTION_ASCENDING
+	}
 
+	if sortBy == racing.SortBy_SORT_BY_ADVERTISED_START_TIME {
+		order := "ASC"
+		if dir == racing.SortDirection_SORT_DIRECTION_DESCENDING {
+			order = "DESC"
+		}
+		// tie-break on id for deterministic order
+		query += " ORDER BY advertised_start_time " + order + ", id ASC"
+	}
+	return query
+}
+
+// scanRaces maps rows to proto messages.
+func (r *racesRepo) scanRaces(rows *sql.Rows) ([]*racing.Race, error) {
+	var out []*racing.Race
 	for rows.Next() {
 		var (
-			race            racing.Race
-			advertisedStart time.Time
+			id, meetingID int64
+			name          string
+			number        int64
+			visible       bool
+			start         time.Time
 		)
-
-		if err := rows.Scan(
-			&race.Id,
-			&race.MeetingId,
-			&race.Name,
-			&race.Number,
-			&race.Visible,
-			&advertisedStart,
-		); err != nil {
+		if err := rows.Scan(&id, &meetingID, &name, &number, &visible, &start); err != nil {
 			if err == sql.ErrNoRows {
 				return nil, nil
 			}
 			return nil, err
 		}
-
-		race.AdvertisedStartTime = timestamppb.New(advertisedStart)
-		races = append(races, &race)
+		out = append(out, &racing.Race{
+			Id:                  id,
+			MeetingId:           meetingID,
+			Name:                name,
+			Number:              number,
+			Visible:             visible,
+			AdvertisedStartTime: timestamppb.New(start),
+		})
 	}
-	return races, nil
+	return out, nil
 }

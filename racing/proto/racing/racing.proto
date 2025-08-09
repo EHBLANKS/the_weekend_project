@@ -12,8 +12,22 @@ enum Visibility {
   VISIBILITY_VISIBLE_ONLY = 2;
 }
 
+enum SortBy {
+  SORT_BY_UNSPECIFIED = 0;
+  SORT_BY_ADVERTISED_START_TIME = 1;
+}
+
+enum SortDirection {
+  SORT_DIRECTION_UNSPECIFIED = 0;
+  SORT_DIRECTION_ASCENDING = 1;
+  SORT_DIRECTION_DESCENDING = 2;
+}
+
+// Request for ListRaces call.
 message ListRacesRequest {
   ListRacesRequestFilter filter = 1;
+  SortBy sort_by = 2;
+  SortDirection direction = 3;
 }
 
 // Response to ListRaces call.

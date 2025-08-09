@@ -1,12 +1,13 @@
 module racing
 
-go 1.24
+go 1.23.0
+
+toolchain go1.24.6
 
 require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.3.0
 	github.com/mattn/go-sqlite3 v1.14.6
 	github.com/stretchr/testify v1.7.0
-	golang.org/x/net v0.38.0
 	google.golang.org/genproto v0.0.0-20210226172003-ab064af71705
 	google.golang.org/grpc v1.73.0
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.1.0
@@ -28,6 +29,7 @@ require (
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/stretchr/objx v0.1.1 // indirect
 	golang.org/x/exp v0.0.0-20250620022241-b7579e27df2b // indirect
+	golang.org/x/net v0.38.0 // indirect
 	golang.org/x/sys v0.34.0 // indirect
 	golang.org/x/text v0.23.0 // indirect
 	gopkg.in/yaml.v2 v2.3.0 // indirect
