@@ -1,45 +1,37 @@
 package service
 
 import (
-	"racing/db"
-	"racing/proto/racing"
+	"context"
 
-	"golang.org/x/net/context"
+	db "racing/db"
+	racing "racing/proto/racing"
 )
 
 type Racing interface {
-	// ListRaces will return a collection of races.
 	ListRaces(ctx context.Context, in *racing.ListRacesRequest) (*racing.ListRacesResponse, error)
 }
 
-// racingService implements the Racing interface.
 type racingService struct {
 	racesRepo db.RacesRepo
 }
 
-// NewRacingService instantiates and returns a new racingService.
 func NewRacingService(racesRepo db.RacesRepo) Racing {
-	return &racingService{racesRepo}
+	return &racingService{racesRepo: racesRepo}
 }
 
 func (s *racingService) ListRaces(ctx context.Context, in *racing.ListRacesRequest) (*racing.ListRacesResponse, error) {
-	races, err := s.racesRepo.List(ctx, in.GetFilter())
+	sortBy := in.GetSortBy()
+	if sortBy == racing.SortBy_SORT_BY_UNSPECIFIED {
+		sortBy = racing.SortBy_SORT_BY_ADVERTISED_START_TIME
+	}
+	dir := in.GetDirection()
+	if dir == racing.SortDirection_SORT_DIRECTION_UNSPECIFIED {
+		dir = racing.SortDirection_SORT_DIRECTION_ASCENDING
+	}
+
+	races, err := s.racesRepo.List(ctx, in.GetFilter(), sortBy, dir)
 	if err != nil {
 		return nil, err
 	}
-
-	// Apply visibilitiy for filter for PR1
-	switch in.GetFilter().GetVisibility() {
-	case racing.Visibility_VISIBILITY_VISIBLE_ONLY:
-		out := make([]*racing.Race, 0, len(races))
-		for _, r := range races {
-			if r.GetVisible() {
-				out = append(out, r)
-			}
-		}
-		races = out
-		// NOTE: VISIBILITY_ANY || VISIBILITY_UNSPECIFIED, no filtering so far
-	}
-
 	return &racing.ListRacesResponse{Races: races}, nil
 }

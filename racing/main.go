@@ -34,9 +34,6 @@ func run() error {
 	}
 
 	racesRepo := db.NewRacesRepo(racingDB)
-	if err := racesRepo.Init(); err != nil {
-		return err
-	}
 
 	grpcServer := grpc.NewServer()
 
