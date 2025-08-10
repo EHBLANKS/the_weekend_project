@@ -4,6 +4,7 @@ package db
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
 	"sync"
@@ -33,6 +34,43 @@ func (r *racesRepo) Init() error {
 		err = r.seed()
 	})
 	return err
+}
+
+func (r *racesRepo) Get(ctx context.Context, id int64) (*racing.Race, error) {
+	now := time.Now().UTC()
+	row := r.db.QueryRowContext(ctx, getRaceQueries()[racesGet], now, id)
+
+	var (
+		rid, meetingID int64
+		name           string
+		number         int64
+		visible        bool
+		start          time.Time
+		statusInt      int64
+	)
+	if err := row.Scan(&rid, &meetingID, &name, &number, &visible, &start, &statusInt); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, sql.ErrNoRows
+		}
+		return nil, fmt.Errorf("get race: %w", err)
+	}
+	status := racing.RaceStatus_RACE_STATUS_UNSPECIFIED
+	switch statusInt {
+	case 1:
+		status = racing.RaceStatus_RACE_STATUS_OPEN
+	case 2:
+		status = racing.RaceStatus_RACE_STATUS_CLOSED
+	}
+
+	return &racing.Race{
+		Id:                  rid,
+		MeetingId:           meetingID,
+		Name:                name,
+		Number:              number,
+		Visible:             visible,
+		AdvertisedStartTime: timestamppb.New(start),
+		Status:              status,
+	}, nil
 }
 
 // List returns races filtered and ordered per request.
