@@ -35,11 +35,14 @@ message ListRacesRequest {
   ListRacesRequestFilter filter = 1;
   SortBy sort_by = 2;
   SortDirection direction = 3;
+  int32 limit = 4;
+  int32 offset = 5;
 }
 
 // Response to ListRaces call.
 message ListRacesResponse {
   repeated Race races = 1;
+  int32 next_offset = 2;
 }
 
 // Filter for listing races.

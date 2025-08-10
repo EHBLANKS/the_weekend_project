@@ -88,7 +88,7 @@ func TestRacesRepo_List_Visibility(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			got, err := repo.List(context.Background(), tc.filter, racing.SortBy_SORT_BY_ADVERTISED_START_TIME, racing.SortDirection_SORT_DIRECTION_ASCENDING)
+			got, err := repo.List(context.Background(), tc.filter, racing.SortBy_SORT_BY_ADVERTISED_START_TIME, racing.SortDirection_SORT_DIRECTION_ASCENDING, 100, 0)
 			if err != nil {
 				t.Fatalf("List returned error: %v", err)
 			}

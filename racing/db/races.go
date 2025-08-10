@@ -41,17 +41,32 @@ func (r *racesRepo) List(
 	filter *racing.ListRacesRequestFilter,
 	sortBy racing.SortBy,
 	direction racing.SortDirection,
+	limit int32,
+	offset int32,
 ) ([]*racing.Race, error) {
 	now := time.Now().UTC()
 	query := getRaceQueries()[racesList]
 
-	var filterArgs []any
-	query, filterArgs = r.applyFilter(query, filter)
-	query = r.applySort(query, sortBy, direction) // <-- ORDER BY here
+	// Filters
+	query, filterArgs := r.applyFilter(query, filter)
 
-	args := make([]any, 0, 1+len(filterArgs))
+	// ORDER BY (stable: advertised_start_time then id, same dir)
+	query = r.applySort(query, sortBy, direction)
+
+	// LIMIT/OFFSET
+	if limit <= 0 {
+		limit = 1
+	}
+	if offset < 0 {
+		offset = 0
+	}
+	query += " LIMIT ? OFFSET ?"
+
+	// Bind: NOW (for CASE), filter args, then limit/offset
+	args := make([]any, 0, 1+len(filterArgs)+2)
 	args = append(args, now)
 	args = append(args, filterArgs...)
+	args = append(args, limit, offset)
 
 	rows, err := r.db.QueryContext(ctx, query, args...)
 	if err != nil {

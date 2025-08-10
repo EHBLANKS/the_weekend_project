@@ -15,9 +15,9 @@ type RacesRepo struct {
 	mock.Mock
 }
 
-// List provides a mock function with given fields: ctx, filter, sortBy, direction
-func (_m *RacesRepo) List(ctx context.Context, filter *racing.ListRacesRequestFilter, sortBy racing.SortBy, direction racing.SortDirection) ([]*racing.Race, error) {
-	ret := _m.Called(ctx, filter, sortBy, direction)
+// List provides a mock function with given fields: ctx, filter, sortBy, direction, limit, offset
+func (_m *RacesRepo) List(ctx context.Context, filter *racing.ListRacesRequestFilter, sortBy racing.SortBy, direction racing.SortDirection, limit int32, offset int32) ([]*racing.Race, error) {
+	ret := _m.Called(ctx, filter, sortBy, direction, limit, offset)
 
 	if len(ret) == 0 {
 		panic("no return value specified for List")
@@ -25,19 +25,19 @@ func (_m *RacesRepo) List(ctx context.Context, filter *racing.ListRacesRequestFi
 
 	var r0 []*racing.Race
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *racing.ListRacesRequestFilter, racing.SortBy, racing.SortDirection) ([]*racing.Race, error)); ok {
-		return rf(ctx, filter, sortBy, direction)
+	if rf, ok := ret.Get(0).(func(context.Context, *racing.ListRacesRequestFilter, racing.SortBy, racing.SortDirection, int32, int32) ([]*racing.Race, error)); ok {
+		return rf(ctx, filter, sortBy, direction, limit, offset)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *racing.ListRacesRequestFilter, racing.SortBy, racing.SortDirection) []*racing.Race); ok {
-		r0 = rf(ctx, filter, sortBy, direction)
+	if rf, ok := ret.Get(0).(func(context.Context, *racing.ListRacesRequestFilter, racing.SortBy, racing.SortDirection, int32, int32) []*racing.Race); ok {
+		r0 = rf(ctx, filter, sortBy, direction, limit, offset)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*racing.Race)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *racing.ListRacesRequestFilter, racing.SortBy, racing.SortDirection) error); ok {
-		r1 = rf(ctx, filter, sortBy, direction)
+	if rf, ok := ret.Get(1).(func(context.Context, *racing.ListRacesRequestFilter, racing.SortBy, racing.SortDirection, int32, int32) error); ok {
+		r1 = rf(ctx, filter, sortBy, direction, limit, offset)
 	} else {
 		r1 = ret.Error(1)
 	}

@@ -12,5 +12,7 @@ type RacesRepo interface {
 		filter *racing.ListRacesRequestFilter,
 		sortBy racing.SortBy,
 		direction racing.SortDirection,
+		limit int32,
+		offset int32,
 	) ([]*racing.Race, error)
 }
