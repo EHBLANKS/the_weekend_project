@@ -2,15 +2,21 @@ package service
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"racing/models"
 
 	db "racing/db"
 
 	racing "racing/proto/racing"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type Racing interface {
 	ListRaces(ctx context.Context, in *racing.ListRacesRequest) (*racing.ListRacesResponse, error)
+	GetRace(ctx context.Context, in *racing.GetRaceRequest) (*racing.GetRaceResponse, error)
 }
 
 type racingService struct {
@@ -19,6 +25,24 @@ type racingService struct {
 
 func NewRacingService(racesRepo db.RacesRepo) Racing {
 	return &racingService{racesRepo: racesRepo}
+}
+
+func (s *racingService) GetRace(ctx context.Context, in *racing.GetRaceRequest) (*racing.GetRaceResponse, error) {
+	if in == nil || in.GetId() <= 0 {
+		return nil, status.Error(codes.InvalidArgument, "invalid id")
+	}
+
+	race, err := s.racesRepo.Get(ctx, in.GetId())
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, status.Error(codes.NotFound, "race not found")
+		}
+		return nil, status.Errorf(codes.Internal, "get race failed: %v", err)
+	}
+
+	return &racing.GetRaceResponse{
+		Race: race,
+	}, nil
 }
 
 func (s *racingService) ListRaces(ctx context.Context, in *racing.ListRacesRequest) (*racing.ListRacesResponse, error) {

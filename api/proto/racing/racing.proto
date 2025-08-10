@@ -51,6 +51,14 @@ message ListRacesRequestFilter {
   Visibility visibility = 2;
 }
 
+message GetRaceRequest {
+  int64 id = 1;
+}
+
+message GetRaceResponse {
+  Race race = 1;
+}
+
 /* Resources */
 
 // A race resource.
@@ -78,5 +86,8 @@ service RacingService {
       post: "/v1/list-races"
       body: "*"
     };
+  }
+  rpc GetRace(GetRaceRequest) returns (GetRaceResponse) {
+    option (google.api.http) = {get: "/v1/races/{id}"};
   }
 }

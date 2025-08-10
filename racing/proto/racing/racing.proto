@@ -50,6 +50,14 @@ message ListRacesRequestFilter {
   Visibility visibility = 2;
 }
 
+message GetRaceRequest {
+  int64 id = 1;
+}
+
+message GetRaceResponse {
+  Race race = 1;
+}
+
 // A race resource.
 message Race {
   // ID represents a unique identifier for the race.
@@ -71,4 +79,5 @@ message Race {
 service RacingService {
   // ListRaces will return a collection of all races.
   rpc ListRaces(ListRacesRequest) returns (ListRacesResponse) {}
+  rpc GetRace(GetRaceRequest) returns (GetRaceResponse) {}
 }
