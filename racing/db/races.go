@@ -41,16 +41,32 @@ func (r *racesRepo) List(
 	filter *racing.ListRacesRequestFilter,
 	sortBy racing.SortBy,
 	direction racing.SortDirection,
+	limit int32,
+	offset int32,
 ) ([]*racing.Race, error) {
-	var (
-		query string
-		args  []any
-	)
+	now := time.Now().UTC()
+	query := getRaceQueries()[racesList]
 
-	query = getRaceQueries()[racesList]
+	// Filters
+	query, filterArgs := r.applyFilter(query, filter)
 
-	query, args = r.applyFilter(query, filter)
-	query = r.applySort(query, sortBy, direction) // <-- ORDER BY here
+	// ORDER BY (stable: advertised_start_time then id, same dir)
+	query = r.applySort(query, sortBy, direction)
+
+	// LIMIT/OFFSET
+	if limit <= 0 {
+		limit = 1
+	}
+	if offset < 0 {
+		offset = 0
+	}
+	query += " LIMIT ? OFFSET ?"
+
+	// Bind: NOW (for CASE), filter args, then limit/offset
+	args := make([]any, 0, 1+len(filterArgs)+2)
+	args = append(args, now)
+	args = append(args, filterArgs...)
+	args = append(args, limit, offset)
 
 	rows, err := r.db.QueryContext(ctx, query, args...)
 	if err != nil {
@@ -73,7 +89,6 @@ func (r *racesRepo) applyFilter(query string, filter *racing.ListRacesRequestFil
 		clauses []string
 		args    []any
 	)
-
 	if filter == nil {
 		return query, args
 	}
@@ -91,7 +106,6 @@ func (r *racesRepo) applyFilter(query string, filter *racing.ListRacesRequestFil
 	switch filter.GetVisibility() {
 	case racing.Visibility_VISIBILITY_VISIBLE_ONLY:
 		clauses = append(clauses, "visible = 1")
-		// VISIBILITY_UNSPECIFIED / VISIBILITY_ANY => no clause
 	}
 
 	if len(clauses) > 0 {
@@ -101,7 +115,6 @@ func (r *racesRepo) applyFilter(query string, filter *racing.ListRacesRequestFil
 }
 
 func (r *racesRepo) applySort(query string, sortBy racing.SortBy, dir racing.SortDirection) string {
-	// default defensively (service already sets defaults)
 	if sortBy == racing.SortBy_SORT_BY_UNSPECIFIED {
 		sortBy = racing.SortBy_SORT_BY_ADVERTISED_START_TIME
 	}
@@ -109,12 +122,12 @@ func (r *racesRepo) applySort(query string, sortBy racing.SortBy, dir racing.Sor
 		dir = racing.SortDirection_SORT_DIRECTION_ASCENDING
 	}
 
+	// Only supported sort column for now
 	if sortBy == racing.SortBy_SORT_BY_ADVERTISED_START_TIME {
 		order := "ASC"
 		if dir == racing.SortDirection_SORT_DIRECTION_DESCENDING {
 			order = "DESC"
 		}
-		// tie-break on id for deterministic order
 		query += " ORDER BY advertised_start_time " + order + ", id ASC"
 	}
 	return query
@@ -130,12 +143,20 @@ func (r *racesRepo) scanRaces(rows *sql.Rows) ([]*racing.Race, error) {
 			number        int64
 			visible       bool
 			start         time.Time
+			statusInt     int64
 		)
-		if err := rows.Scan(&id, &meetingID, &name, &number, &visible, &start); err != nil {
+		if err := rows.Scan(&id, &meetingID, &name, &number, &visible, &start, &statusInt); err != nil {
 			if err == sql.ErrNoRows {
 				return nil, nil
 			}
 			return nil, err
+		}
+		status := racing.RaceStatus_RACE_STATUS_UNSPECIFIED
+		switch statusInt {
+		case 1:
+			status = racing.RaceStatus_RACE_STATUS_OPEN
+		case 2:
+			status = racing.RaceStatus_RACE_STATUS_CLOSED
 		}
 		out = append(out, &racing.Race{
 			Id:                  id,
@@ -144,6 +165,7 @@ func (r *racesRepo) scanRaces(rows *sql.Rows) ([]*racing.Race, error) {
 			Number:              number,
 			Visible:             visible,
 			AdvertisedStartTime: timestamppb.New(start),
+			Status:              status,
 		})
 	}
 	return out, nil

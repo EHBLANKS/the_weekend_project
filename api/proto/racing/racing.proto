@@ -24,16 +24,25 @@ enum SortDirection {
   SORT_DIRECTION_DESCENDING = 2;
 }
 
+enum RaceStatus {
+  RACE_STATUS_UNSPECIFIED = 0;
+  RACE_STATUS_OPEN = 1;
+  RACE_STATUS_CLOSED = 2;
+}
+
 // Request for ListRaces call.
 message ListRacesRequest {
   ListRacesRequestFilter filter = 1;
   SortBy sort_by = 2;
   SortDirection direction = 3;
+  int32 limit = 4;
+  int32 offset = 5;
 }
 
 // Response to ListRaces call.
 message ListRacesResponse {
   repeated Race races = 1;
+  int32 next_offset = 2;
 }
 
 // Filter for listing races.
@@ -58,6 +67,8 @@ message Race {
   bool visible = 5;
   // AdvertisedStartTime is the time the race is advertised to run.
   google.protobuf.Timestamp advertised_start_time = 6;
+  // RaceStatus defines if the start time is in the past (CLOSED) or now/future (OPEN)
+  RaceStatus status = 7;
 }
 
 service RacingService {
