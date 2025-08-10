@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package sports;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "sports/proto/sports;sports";
+
+enum Visibility {
+  VISIBILITY_UNSPECIFIED = 0;
+  VISIBILITY_VISIBLE_ONLY = 1;
+}
+
+enum SortBy {
+  SORT_BY_UNSPECIFIED = 0;
+  SORT_BY_ADVERTISED_START_TIME = 1;
+}
+
+enum SortDirection {
+  SORT_DIRECTION_UNSPECIFIED = 0;
+  SORT_DIRECTION_ASCENDING = 1;
+  SORT_DIRECTION_DESCENDING = 2;
+}
+
+enum EventStatus {
+  EVENT_STATUS_UNSPECIFIED = 0;
+  EVENT_STATUS_OPEN = 1;
+  EVENT_STATUS_CLOSED = 2;
+}
+
+message Event {
+  int64 id = 1;
+  string name = 2;
+  google.protobuf.Timestamp advertised_start_time = 3;
+  bool visible = 4;
+  int64 competition_id = 5;
+  EventStatus status = 6; // derived (OPEN/CLOSED) from advertised_start_time
+}
+
+message ListEventsRequestFilter {
+  repeated int64 competition_ids = 1;
+  Visibility visibility = 2;
+}
+
+message ListEventsRequest {
+  ListEventsRequestFilter filter = 1;
+  SortBy sort_by = 2;
+  SortDirection direction = 3;
+  int32 limit = 4;
+  int32 offset = 5;
+}
+
+message ListEventsResponse {
+  repeated Event events = 1;
+  int32 next_offset = 2;
+}
+
+service SportsService {
+  rpc ListEvents(ListEventsRequest) returns (ListEventsResponse) {
+    option (google.api.http) = {
+      post: "/v1/sports/list-events"
+      body: "*"
+    };
+  }
+}

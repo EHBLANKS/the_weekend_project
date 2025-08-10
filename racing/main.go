@@ -5,16 +5,14 @@ import (
 	"flag"
 	"log"
 	"net"
+	"racing/db"
+	"racing/proto/racing"
+	"racing/service"
 
-	"git.neds.sh/matty/entain/racing/db"
-	"git.neds.sh/matty/entain/racing/proto/racing"
-	"git.neds.sh/matty/entain/racing/service"
 	"google.golang.org/grpc"
 )
 
-var (
-	grpcEndpoint = flag.String("grpc-endpoint", "localhost:9000", "gRPC server endpoint")
-)
+var grpcEndpoint = flag.String("grpc-endpoint", "localhost:9000", "gRPC server endpoint")
 
 func main() {
 	flag.Parse()
@@ -36,13 +34,10 @@ func run() error {
 	}
 
 	racesRepo := db.NewRacesRepo(racingDB)
-	if err := racesRepo.Init(); err != nil {
-		return err
-	}
 
 	grpcServer := grpc.NewServer()
 
-	racing.RegisterRacingServer(
+	racing.RegisterRacingServiceServer(
 		grpcServer,
 		service.NewRacingService(
 			racesRepo,

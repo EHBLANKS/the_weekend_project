@@ -1,33 +1,62 @@
 syntax = "proto3";
 package racing;
 
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
 option go_package = "/racing";
 
-import "google/protobuf/timestamp.proto";
-import "google/api/annotations.proto";
-
-service Racing {
-  // ListRaces returns a list of all races.
-  rpc ListRaces(ListRacesRequest) returns (ListRacesResponse) {
-    option (google.api.http) = { post: "/v1/list-races", body: "*" };
-  }
+// types/enums
+enum Visibility {
+  VISIBILITY_UNSPECIFIED = 0; // backwards compatible default
+  VISIBILITY_ANY = 1;
+  VISIBILITY_VISIBLE_ONLY = 2;
 }
 
-/* Requests/Responses */
+enum SortBy {
+  SORT_BY_UNSPECIFIED = 0;
+  SORT_BY_ADVERTISED_START_TIME = 1;
+}
+
+enum SortDirection {
+  SORT_DIRECTION_UNSPECIFIED = 0;
+  SORT_DIRECTION_ASCENDING = 1;
+  SORT_DIRECTION_DESCENDING = 2;
+}
+
+enum RaceStatus {
+  RACE_STATUS_UNSPECIFIED = 0;
+  RACE_STATUS_OPEN = 1;
+  RACE_STATUS_CLOSED = 2;
+}
 
 // Request for ListRaces call.
 message ListRacesRequest {
   ListRacesRequestFilter filter = 1;
+  SortBy sort_by = 2;
+  SortDirection direction = 3;
+  int32 limit = 4;
+  int32 offset = 5;
 }
 
 // Response to ListRaces call.
 message ListRacesResponse {
   repeated Race races = 1;
+  int32 next_offset = 2;
 }
 
 // Filter for listing races.
 message ListRacesRequestFilter {
   repeated int64 meeting_ids = 1;
+  Visibility visibility = 2;
+}
+
+message GetRaceRequest {
+  int64 id = 1;
+}
+
+message GetRaceResponse {
+  Race race = 1;
 }
 
 /* Resources */
@@ -46,4 +75,19 @@ message Race {
   bool visible = 5;
   // AdvertisedStartTime is the time the race is advertised to run.
   google.protobuf.Timestamp advertised_start_time = 6;
+  // RaceStatus defines if the start time is in the past (CLOSED) or now/future (OPEN)
+  RaceStatus status = 7;
+}
+
+service RacingService {
+  // ListRaces returns a list of all races.
+  rpc ListRaces(ListRacesRequest) returns (ListRacesResponse) {
+    option (google.api.http) = {
+      post: "/v1/list-races"
+      body: "*"
+    };
+  }
+  rpc GetRace(GetRaceRequest) returns (GetRaceResponse) {
+    option (google.api.http) = {get: "/v1/races/{id}"};
+  }
 }
